@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Теория поколений не работает - ЭКОПСИ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            overflow: hidden;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 60px 80px;
+            background: white;
+            overflow-y: auto;
+            animation: fadeIn 0.3s;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Макет слайдов */
+        .slide-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #1a3a52;
+            margin-bottom: 30px;
+        }
+
+        .slide-subtitle {
+            font-size: 1.5rem;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .slide-content {
+            font-size: 1.1rem;
+            color: #333;
+            line-height: 1.8;
+            max-width: 900px;
+        }
+
+        .slide-image {
+            max-width: 100%;
+            height: auto;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        /* Типографика */
+        h2 {
+            font-size: 2.5rem;
+            color: #1a3a52;
+            margin-bottom: 40px;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #2563eb;
+            margin: 20px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.15rem;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background-color: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+            color: #92400e;
+        }
+
+        .stat {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin: 10px 0;
+        }
+
+        /* Списки */
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .key-point {
+            background-color: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .key-point strong {
+            color: #1a3a52;
+            font-size: 1.2rem;
+        }
+
+        /* Интерактивные элементы */
+        .interactive-box {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .interactive-box:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+
+        .interactive-box.expanded {
+            background: #eff6ff;
+        }
+
+        .interactive-title {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #1a3a52;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expand-icon {
+            display: inline-block;
+            transition: transform 0.3s;
+            font-size: 1.5rem;
+            color: #2563eb;
+        }
+
+        .interactive-box.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .interactive-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #d1d5db;
+        }
+
+        .interactive-box.expanded .interactive-content {
+            display: block;
+        }
+
+        /* Навигация */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        .nav-button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .nav-button:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Меню навигации */
+        .slide-menu {
+            padding: 0 40px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .menu-button {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .menu-button:hover {
+            background: #e5e7eb;
+        }
+
+        .menu-button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        /* Таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #d1d5db;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #1a3a52;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px 20px;
+            }
+
+            .slide-title {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .slide-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .stat {
+                font-size: 2rem;
+            }
+
+            .navigation {
+                padding: 15px 20px;
+            }
+
+            .slide-menu {
+                padding: 0 20px;
+            }
+        }
+
+        /* Специальные стили для слайдов */
+        .slide-1 {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            text-align: center;
+            justify-content: center;
+        }
+
+        .slide-1 h1 {
+            font-size: 3.5rem;
+            color: #1a3a52;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            color: #2563eb;
+            margin-top: 40px;
+            font-weight: 600;
+        }
+
+        .authors {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 30px;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .strategy-card {
+            background: #eff6ff;
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .strategy-number {
+            font-size: 2rem;
+            color: #2563eb;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .strategy-card h3 {
+            margin-top: 0;
+        }
+
+        .comparison-table {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- SLIDE 1: Титул -->
+        <div class="slide slide-1 active">
+            <h1>Теория поколений<br/>не работает</h1>
+            <p class="slide-subtitle">Исследование на основе более 1 млн сотрудников российских компаний (2011–2024)</p>
+            <div class="logo-text">ЭКОПСИ Scientific Institute</div>
+            <div class="authors">
+                <p><strong>Авторы:</strong> Андрей Онучин, Григорий Финкельштейн, Любовь Шокина</p>
+                <p style="margin-top: 20px; font-size: 0.95rem; color: #999;">Представлено руководству АО ТАМАК</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Главное открытие -->
+        <div class="slide">
+            <h2>Главное открытие</h2>
+            <div class="key-point">
+                <strong>Различий между поколениями не существует.</strong><br/>
+                Популярная «теория поколений» — набор удобных стереотипов, не подтвержденных данными.
+            </div>
+            <p style="margin-top: 40px; font-size: 1.3rem;">Вместо этого:</p>
+            <ul>
+                <li><span class="highlight">Возраст определяет ценности</span>, а не год рождения</li>
+                <li><span class="highlight">Контекст меняется</span>, и люди адаптируются независимо от возраста</li>
+                <li><span class="highlight">Молодость</span> = развитие и самореализация</li>
+                <li><span class="highlight">Зрелость</span> = стабильность и смысл</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 3: Что такое теория поколений -->
+        <div class="slide">
+            <h2>Что такое «теория поколений»?</h2>
+            <p>Популярная концепция, предложенная Штраусом и Хоу, утверждает, что ценности и поведение формируются в молодости и остаются неизменными на всю жизнь.</p>
+
+            <div class="interactive-box" onclick="toggleInteractive(this)">
+                <div class="interactive-title">
+                    Стереотипные портреты поколений
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="interactive-content">
+                    <table>
+                        <tr>
+                            <th>Поколение</th>
+                            <th>Стереотип</th>
+                        </tr>
+                        <tr>
+                            <td><strong>Бумеры (1946–63)</strong></td>
+                            <td>Верят в труд, стабильность, уважают иерархию</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Поколение X (1964–80)</strong></td>
+                            <td>Прагматики, ценят независимость и честные сделки</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Миллениалы (1981–96)</strong></td>
+                            <td>Ищут смысл, развитие, уважение и обратную связь</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Зумеры (1997–2012)</strong></td>
+                            <td>Гибкость, самовыражение, безопасность, влияние</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px; color: #dc2626;"><strong>Проблема:</strong> Эти стереотипы удобны, но не имеют научного подтверждения.</p>
+        </div>
+
+        <!-- SLIDE 4: Почему верят -->
+        <div class="slide">
+            <h2>Почему компании верят в «теорию поколений»?</h2>
+            <h3>1. Психологический комфорт</h3>
+            <p>Ярлыки помогают понять себя и других: «Я миллениал», «Они зумеры». Это дает ощущение уникальности и принадлежности.</p>
+
+            <h3>2. Управленческая удобность</h3>
+            <p>Готовые образы позволяют быстро объяснить различия в поведении и создавать программы HR и корпоративной культуры.</p>
+
+            <div class="key-point" style="margin-top: 30px;">
+                <strong>Результат:</strong> Появились целые индустрии консалтинга и обучения, основанные на этом мифе.
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Методология -->
+        <div class="slide">
+            <h2>Почему нам можно верить?</h2>
+            <h3>Масштаб исследования ЭКОПСИ</h3>
+            <p style="margin-bottom: 30px;">Это первое и крупнейшее исследование поколений в своем роде:</p>
+
+            <table class="comparison-table">
+                <tr>
+                    <th>Параметр</th>
+                    <th>ЭКОПСИ</th>
+                    <th>Зарубежные исследования</th>
+                </tr>
+                <tr>
+                    <td><strong>Выборка</strong></td>
+                    <td class="highlight">1,000,000+ сотрудников</td>
+                    <td>10–20 тыс. человек</td>
+                </tr>
+                <tr>
+                    <td><strong>Период</strong></td>
+                    <td class="highlight">14 лет (2011–2024)</td>
+                    <td>1–3 года</td>
+                </tr>
+                <tr>
+                    <td><strong>Метрика</strong></td>
+                    <td class="highlight">Реальная вовлеченность</td>
+                    <td>Прямые вопросы опросов</td>
+                </tr>
+                <tr>
+                    <td><strong>Охват</strong></td>
+                    <td class="highlight">Все возрастные группы</td>
+                    <td>3–4 поколения</td>
+                </tr>
+            </table>
+
+            <p style="margin-top: 30px; color: #059669;"><strong>✓ Вывод:</strong> Мы измеряли не то, что люди считают важным, а то, что действительно определяет их вовлеченность.</p>
+        </div>
+
+        <!-- SLIDE 6: Доказательство #1 -->
+        <div class="slide">
+            <h2>Факт #1: Иксы = Миллениалы = Зумеры</h2>
+            <p style="margin-bottom: 30px;">По основным ценностям между поколениями почти нет различий.</p>
+
+            <div class="key-point">
+                <strong>Пример:</strong> В период 2021–2024 ценностный профиль 60-летних (иксов) имеет корреляцию <span style="font-size: 1.3rem; color: #059669;">0.7</span> с профилем 40-летних (миллениалов).<br/><br/>
+                <span style="font-size: 0.95rem;">0.7 = очень высокая степень сходства (практически идентичны).</span>
+            </div>
+
+            <p style="margin-top: 30px;">Если бы поколения действительно отличались, корреляция была бы отрицательной или близкой к нулю.</p>
+
+            <h3 style="color: #dc2626; margin-top: 40px;">Миф опровергнут.</h3>
+        </div>
+
+        <!-- SLIDE 7: Доказательство #2 -->
+        <div class="slide">
+            <h2>Факт #2: Молодежь в 2015 и 2024 — одинаковая</h2>
+            <p style="margin-bottom: 30px;">То, что ценят молодые люди (20–35 лет), не менялось за последние 10 лет:</p>
+
+            <ul style="font-size: 1.2rem; margin-top: 30px;">
+                <li>✓ Возможность реализовать свои способности</li>
+                <li>✓ Совпадение личных ценностей с ценностями компании</li>
+                <li>✓ Понимание влияния своей работы на общий результат</li>
+            </ul>
+
+            <div class="key-point" style="margin-top: 40px;">
+                <strong>Вывод:</strong> Молодежь сегодня ценит то же, что молодежь 10 лет назад. Изменился контекст (интернет, смартфоны), но не базовые потребности.
+            </div>
+
+            <p style="margin-top: 30px; color: #999;">Это разрушает центральное положение теории поколений.</p>
+        </div>
+
+        <!-- SLIDE 8: Доказательство #3 -->
+        <div class="slide">
+            <h2>Факт #3: Ценности меняются с контекстом</h2>
+            <p style="margin-bottom: 30px;">Внешние обстоятельства влияют на ценности <strong>всех возрастных групп одновременно</strong>:</p>
+
+            <div class="interactive-box" onclick="toggleInteractive(this)">
+                <div class="interactive-title">
+                    Примеры из исследования
+                    <span class="expand-icon">▼</span>
+                </div>
+                <div class="interactive-content">
+                    <p><strong>2011–2015:</strong> Основной приоритет — корпоративное обучение и развитие.</p>
+                    <p><strong>2016–2020:</strong> Влияние онлайн-платформ (Skillbox, Coursera) → обучение перестало быть приоритетом.</p>
+                    <p><strong>2021–2024:</strong> COVID-19 и инфляция → основной приоритет — увеличение доходов и баланс жизни.</p>
+                    <p style="margin-top: 20px;"><strong>Ключевое:</strong> Эти сдвиги произошли ВО ВСЕХ возрастных группах, а не в отдельных поколениях.</p>
+                </div>
+            </div>
+
+            <p style="margin-top: 30px;"><strong>Практический пример:</strong> Крупная промышленная компания строила корпоративный университет (2016–2017). К моменту открытия потребности сотрудников изменились. Программы для управленцев перестали быть актуальными → переориентировали на производственные навыки.</p>
+        </div>
+
+        <!-- SLIDE 9: Доказательство #4 -->
+        <div class="slide">
+            <h2>Факт #4: Возраст меняет ценности</h2>
+            <p style="margin-bottom: 30px;">Эта закономерность одинакова во все эпохи:</p>
+
+            <div style="background: #f3f4f6; padding: 25px; border-radius: 8px; margin: 30px 0;">
+                <h3 style="margin-top: 0; color: #1a3a52;">В молодости (20–35 лет):</h3>
+                <ul style="margin-top: 15px;">
+                    <li>Развитие способностей</li>
+                    <li>Совпадение ценностей компании с личными</li>
+                    <li>Экспериментирование и новые проекты</li>
+                </ul>
+
+                <h3 style="margin-top: 30px; color: #1a3a52;">С возрастом (после 40):</h3>
+                <ul style="margin-top: 15px;">
+                    <li>Приносить пользу людям</li>
+                    <li>Стабильность и надежность</li>
+                    <li>Баланс между работой и жизнью</li>
+                    <li>Быть экспертом и наставником</li>
+                </ul>
+            </div>
+
+            <p style="margin-top: 30px; color: #059669;"><strong>✓ Это универсальная возрастная динамика, а не поколенческая черта.</strong></p>
+        </div>
+
+        <!-- SLIDE 10: Bonus -->
+        <div class="slide">
+            <h2>Bonus: Люди взрослеют позже</h2>
+            <p style="margin-bottom: 20px;">Интересное открытие: <span class="highlight">граница между «молодостью» и «зрелостью» сдвинулась с 30 к 35 годам.</span></p>
+
+            <div class="key-point" style="margin: 30px 0;">
+                <strong>2015:</strong> Переход в «зрелость» происходил в ~30 лет<br/>
+                <strong>2025:</strong> Переход в «зрелость» — в ~35 лет<br/>
+                <strong>Тенденция:</strong> Продолжает сдвигаться дальше
+            </div>
+
+            <h3>Возможные причины:</h3>
+            <ul>
+                <li>Планирование долгой жизни → откладывание взрослых обязанностей</li>
+                <li>Позднее создание семей и рождение детей</li>
+                <li>Высокие цены на жилье → финансовая зависимость от родителей</li>
+                <li>Безопасное общество не наказывает «затянувшееся» взросление</li>
+            </ul>
+
+            <p style="margin-top: 30px; color: #dc2626;"><strong>Для управления:</strong> 30-летние сегодня находятся на другом жизненном этапе, чем 10 лет назад. Теория поколений с фиксированными возрастными рамками это не учитывает.</p>
+        </div>
+
+        <!-- SLIDE 11: Стратегия #1 -->
+        <div class="slide">
+            <h2>Новый подход к управлению персоналом</h2>
+            <div class="strategy-card">
+                <div class="strategy-number">Шаг 1</div>
+                <h3>Управляйте возрастом, а не поколением</h3>
+                <p>25-летние и 50-летние нуждаются в разных подходах — не потому, что из разных поколений, а потому, что на разных этапах жизни.</p>
+                <p style="margin-top: 20px;"><strong>Для молодых (20–35):</strong></p>
+                <ul style="margin-bottom: 20px;">
+                    <li>Новые проекты и экспериментирование</li>
+                    <li>Обучение и развитие</li>
+                    <li>Возможность пробовать разные роли</li>
+                    <li>Мастер-классы от экспертов</li>
+                </ul>
+                <p><strong>Для зрелых (40+):</strong></p>
+                <ul>
+                    <li>Надежность и предсказуемость</li>
+                    <li>Гибкость и баланс жизни</li>
+                    <li>Роль наставника и эксперта</li>
+                    <li>Возможность влиять на стратегию</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Стратегия #2 -->
+        <div class="slide">
+            <h2>Новый подход к управлению персоналом</h2>
+            <div class="strategy-card">
+                <div class="strategy-number">Шаг 2</div>
+                <h3>Учитывайте контекст, а не год рождения</h3>
+                <p>Ценности людей меняются с контекстом: кризис, рост, цифровизация, пандемия. Все возрастные группы реагируют на изменения синхронно.</p>
+                <p style="margin-top: 20px;"><strong>Какие вопросы задавать себе:</strong></p>
+                <ul style="margin-bottom: 20px;">
+                    <li>Какой сейчас экономический контекст?</li>
+                    <li>Какие технологические сдвиги происходят?</li>
+                    <li>Как это влияет на приоритеты всех сотрудников?</li>
+                    <li>Нужно ли обновить HR-политику?</li>
+                </ul>
+                <p style="margin-top: 20px; background: #fef3c7; padding: 15px; border-radius: 4px;"><strong>Практика:</strong> Ежегодный или полугодовой мониторинг вовлеченности помогает отслеживать изменения контекста и адаптировать стратегии.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Стратегия #3 -->
+        <div class="slide">
+            <h2>Новый подход к управлению персоналом</h2>
+            <div class="strategy-card">
+                <div class="strategy-number">Шаг 3</div>
+                <h3>Персонализируйте, а не навешивайте ярлыки</h3>
+                <p>Забудьте об ярлыках типа «миллениал» или «зумер». Используйте реальные данные о мотивации конкретных сотрудников.</p>
+                <p style="margin-top: 20px;"><strong>Инструменты персонализации:</strong></p>
+                <ul style="margin-bottom: 20px;">
+                    <li>Регулярные опросы о вовлеченности</li>
+                    <li>1-на-1 беседы и обратная связь</li>
+                    <li>Анализ факторов, влияющих на продуктивность</li>
+                    <li>Коррекция подходов на основе реальных данных</li>
+                </ul>
+                <p style="margin-top: 20px; color: #059669;"><strong>Сложнее, чем ярлыки — но эффективнее в 10 раз.</strong></p>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Практическое применение для ТАМАК -->
+        <div class="slide">
+            <h2>Что это значит для АО ТАМАК?</h2>
+
+            <h3>Текущая ситуация</h3>
+            <p>В строительном и деревообрабатывающем секторе часто используются стереотипы вроде «молодежь не хочет работать в производстве» или «молодые и старые иначе относятся к дисциплине».</p>
+
+            <h3>Новый подход</h3>
+            <div class="key-point">
+                <strong>Вместо:</strong> «Наша молодежь — это поколение Z с другими ценностями»<br/>
+                <strong>Переходим на:</strong> «Наша молодежь (20–35 лет) нуждается в развитии и смысле независимо от эпохи»
+            </div>
+
+            <h3>Конкретные действия</h3>
+            <ul>
+                <li>📊 <strong>Провести мониторинг вовлеченности</strong> — понять реальные приоритеты ваших сотрудников</li>
+                <li>🎯 <strong>Адаптировать программы обучения</strong> под реальный контекст (не на стереотипах)</li>
+                <li>⚖️ <strong>Переработать корпоративную культуру</strong> с учетом возраста, а не поколения</li>
+                <li>📈 <strong>Снизить текучесть</strong> молодых сотрудников, предоставляя им то, что они реально ценят</li>
+            </ul>
+        </div>
+
+        <!-- SLIDE 15: Финал -->
+        <div class="slide">
+            <h2>Итоги и следующие шаги</h2>
+
+            <div class="key-point">
+                <strong>Главный вывод:</strong><br/>
+                Эффективное управление работает на реальных данных, а не на стереотипах. Отказ от «теории поколений» не стирает различия между людьми — напротив, он помогает увидеть реальное разнообразие.
+            </div>
+
+            <h3>Что делать дальше:</h3>
+            <ol>
+                <li>Заказать исследование вовлеченности персонала (ЭКОПСИ или аналогичное)</li>
+                <li>Проанализировать ценностные профили разных возрастных групп в вашей компании</li>
+                <li>Переработать программы развития на основе реальных данных</li>
+                <li>Обучить менеджмент новому подходу к управлению</li>
+                <li>Отслеживать результаты и адаптировать политику ежегодно</li>
+            </ol>
+
+            <p style="margin-top: 40px; text-align: center; font-size: 1.3rem; color: #2563eb; font-weight: 600;">
+                Управляйте людьми на основе фактов,<br/>а не стереотипов
+            </p>
+        </div>
+
+        <!-- SLIDE MENU -->
+        <div class="slide-menu">
+            <button class="menu-button active" onclick="goToSlide(0)">1. Титул</button>
+            <button class="menu-button" onclick="goToSlide(1)">2. Открытие</button>
+            <button class="menu-button" onclick="goToSlide(2)">3. Теория</button>
+            <button class="menu-button" onclick="goToSlide(3)">4. Почему верят</button>
+            <button class="menu-button" onclick="goToSlide(4)">5. Методология</button>
+            <button class="menu-button" onclick="goToSlide(5)">6. Факт #1</button>
+            <button class="menu-button" onclick="goToSlide(6)">7. Факт #2</button>
+            <button class="menu-button" onclick="goToSlide(7)">8. Факт #3</button>
+            <button class="menu-button" onclick="goToSlide(8)">9. Факт #4</button>
+            <button class="menu-button" onclick="goToSlide(9)">10. Bonus</button>
+            <button class="menu-button" onclick="goToSlide(10)">11. Стратегия 1</button>
+            <button class="menu-button" onclick="goToSlide(11)">12. Стратегия 2</button>
+            <button class="menu-button" onclick="goToSlide(12)">13. Стратегия 3</button>
+            <button class="menu-button" onclick="goToSlide(13)">14. Для ТАМАК</button>
+            <button class="menu-button" onclick="goToSlide(14)">15. Итоги</button>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="navigation">
+            <button class="nav-button" onclick="previousSlide()" id="prevBtn">← Назад</button>
+            <span class="slide-counter"><span id="currentSlide">1</span> / 15</span>
+            <button class="nav-button" onclick="nextSlide()" id="nextBtn">Далее →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            if (n >= totalSlides) {
+                currentSlideIndex = totalSlides - 1;
+            }
+            if (n < 0) {
+                currentSlideIndex = 0;
+            }
+
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+            });
+
+            slides[currentSlideIndex].classList.add('active');
+
+            // Update menu buttons
+            document.querySelectorAll('.menu-button').forEach((btn, index) => {
+                btn.classList.remove('active');
+                if (index === currentSlideIndex) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update counter
+            document.getElementById('currentSlide').textContent = currentSlideIndex + 1;
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentSlideIndex === 0;
+            document.getElementById('nextBtn').disabled = currentSlideIndex === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            currentSlideIndex++;
+            showSlide(currentSlideIndex);
+        }
+
+        function previousSlide() {
+            currentSlideIndex--;
+            showSlide(currentSlideIndex);
+        }
+
+        function goToSlide(n) {
+            currentSlideIndex = n;
+            showSlide(currentSlideIndex);
+        }
+
+        function toggleInteractive(element) {
+            element.classList.toggle('expanded');
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // Initialize
+        showSlide(currentSlideIndex);
+    </script>
+</body>
+</html>
